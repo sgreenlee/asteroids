@@ -179,6 +179,7 @@
 	var Util = __webpack_require__(2);
 	var Asteroid = __webpack_require__(5);
 	var Ship = __webpack_require__(6);
+	var Bullet = __webpack_require__(8);
 
 	function Game() {
 	  this._asteroids = [];
@@ -233,9 +234,19 @@
 	  for (var i = 0; i < objects.length - 1; i++) {
 	    for (var j = i + 1; j < objects.length; j++) {
 	      if (objects[i].isCollidedWith(objects[j])) {
-	        objects[i].collideWith(objects[j]);
+	        this.handleCollision(objects[i], objects[j]);
 	      }
 	    }
+	  }
+	};
+
+	Game.prototype.handleCollision = function(object1, object2) {
+	  if (object1 instanceof Asteroid && object2 instanceof Ship) {
+	    object2.relocate();
+	  }
+	  else if (object1 instanceof Bullet && object2 instanceof Asteroid){
+	    this.remove(object1);
+	    this.remove(object2);
 	  }
 	};
 
@@ -259,7 +270,7 @@
 
 	var Util = __webpack_require__(2);
 	var MovingObject = __webpack_require__(3);
-	var Ship = __webpack_require__(6)
+	// var Ship = require("./ship.js");
 
 	function Asteroid(params) {
 
@@ -274,12 +285,12 @@
 	Asteroid.COLOR = 'grey';
 	Asteroid.RADIUS = 40;
 
-	Asteroid.prototype.collideWith = function(otherObject) {
-	  if (otherObject instanceof Ship) {
-	    otherObject.relocate();
-	  }
-	};
-
+	// Asteroid.prototype.collideWith = function(otherObject) {
+	//   if (otherObject instanceof Ship) {
+	//     otherObject.relocate();
+	//   }
+	// };
+	// debugger
 	module.exports = Asteroid;
 
 
@@ -386,8 +397,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2);
-	var Asteroid = __webpack_require__(5);
 	var MovingObject = __webpack_require__(3);
+	var Asteroid = __webpack_require__(5);
+	// debugger
 
 	function Bullet (params) {
 	  params.color = Bullet.COLOR;
