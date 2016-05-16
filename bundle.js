@@ -142,9 +142,9 @@
 	  this.radius = params.radius;
 	}
 
-	MovingObject.prototype.move = function() {
-	  this.pos[0] += this.vel[0];
-	  this.pos[1] += this.vel[1];
+	MovingObject.prototype.move = function(delta) {
+	  this.pos[0] += this.vel[0] * delta;
+	  this.pos[1] += this.vel[1] * delta;
 	  if (this.game.isOutOfBounds(this.pos)){
 	    if (this.isWrappable) {
 	      this.pos = this.game.wrap(this.pos);
@@ -219,10 +219,10 @@
 	  }
 	};
 
-	Game.prototype.moveObjects = function() {
+	Game.prototype.moveObjects = function(delta) {
 	  var objects = this.allObjects();
 	  for (var i = 0; i < objects.length; i++) {
-	    objects[i].move();
+	    objects[i].move(delta);
 	  }
 	};
 
@@ -264,13 +264,17 @@
 	  return objects;
 	};
 
-	Game.prototype.step = function () {
-	  this.moveObjects();
+	Game.prototype.step = function (delta) {
+	  this.moveObjects(delta);
 	  this.checkCollisions();
 	};
 
 	Game.prototype.isOutOfBounds = function(pos) {
 	  return ( pos[0] < 0 || pos[0] > Game.DIM_X || pos[1] < 0 || pos[1] > Game.DIM_Y);
+	};
+
+	Game.prototype.isOver = function() {
+	  return (this._asteroids.length === 0);
 	};
 
 	module.exports = Game;
@@ -288,7 +292,7 @@
 
 	  params.color = Asteroid.COLOR;
 	  params.radius = Asteroid.RADIUS;
-	  params.vel = Util.randomVec(-5, 5, -5, 5);
+	  params.vel = Util.randomVec(-0.3, 0.3, -0.3, 0.3);
 
 	  MovingObject.call(this, params);
 	}
@@ -387,21 +391,30 @@
 	  var game = this.game;
 	  var ctx = this.ctx;
 	  this.bindKeyHandlers();
+	  var oldTime = performance.now();
 
-	  function animate() {
-	    game.step();
-	    game.draw(ctx);
-	    requestAnimationFrame(animate);
+	  function animate(timestamp) {
+	    if (game.isOver()) {
+	      ctx.font = "48px sans-serif";
+	      ctx.fillStyle = "black";
+	      ctx.fillText("YOU WIN", 300, 300);
+	    } else {
+	      var delta = timestamp - oldTime;
+	      oldTime = timestamp;
+	      game.step(delta);
+	      game.draw(ctx);
+	      requestAnimationFrame(animate);
+	    }
 	  }
 
-	  animate();
+	  animate(1);
 	};
 
 	GameView.prototype.bindKeyHandlers = function(){
 	  var ship = this.game.ship;
-	  key("up", ship.power.bind(ship, 1));
-	  key("left", ship.steer.bind(ship, -0.3));
-	  key("right", ship.steer.bind(ship, 0.3));
+	  key("up", ship.power.bind(ship, 0.1));
+	  key("left", ship.steer.bind(ship, -0.5));
+	  key("right", ship.steer.bind(ship, 0.5));
 	  key("space", ship.fireBullet.bind(ship));
 	};
 
@@ -430,7 +443,7 @@
 
 	Bullet.COLOR = 'yellow';
 	Bullet.RADIUS = 2;
-	Bullet.VELOCITY_MULTIPLIER = 5;
+	Bullet.VELOCITY_MULTIPLIER = .4;
 
 	// Bullet.prototype.collideWith = function(otherObject) {
 	//   if (otherObject.type === "ASTEROID") {
