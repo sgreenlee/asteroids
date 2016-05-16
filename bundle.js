@@ -102,6 +102,13 @@
 	  return Math.sqrt(Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
 	};
 
+	Util.rotateVec = function (vec, angle) {
+	  x = vec[0] * Math.cos(angle) - vec[1] * Math.sin(angle);
+	  y = vec[0] * Math.sin(angle) + vec[1] * Math.cos(angle);
+
+	  return [x, y];
+	};
+
 	module.exports = Util;
 
 
@@ -288,6 +295,10 @@
 	  this.vel[1] += impulse[1];
 	};
 
+	Ship.prototype.steer = function(angle) {
+	  this.vel = Util.rotateVec(this.vel, angle);
+	};
+
 	module.exports = Ship;
 
 
@@ -313,6 +324,8 @@
 	GameView.prototype.bindKeyHandlers = function(){
 	  var ship = this.game.ship;
 	  key("up", ship.power.bind(ship, [1, 1]));
+	  key("left", ship.steer.bind(ship, -0.4));
+	  key("right", ship.steer.bind(ship, 0.4));
 	};
 
 	module.exports = GameView;
