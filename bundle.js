@@ -145,7 +145,13 @@
 	MovingObject.prototype.move = function() {
 	  this.pos[0] += this.vel[0];
 	  this.pos[1] += this.vel[1];
-	  this.pos = this.game.wrap(this.pos);
+	  if (this.game.isOutOfBounds(this.pos)){
+	    if (this.isWrappable) {
+	      this.pos = this.game.wrap(this.pos);
+	    } else {
+	      this.game.remove(this);
+	    }
+	  }
 	};
 
 	MovingObject.prototype.draw = function(ctx) {
@@ -168,6 +174,8 @@
 	MovingObject.prototype.collideWith = function(otherObject) {
 
 	};
+
+	MovingObject.prototype.isWrappable = true;
 
 	module.exports = MovingObject;
 
@@ -259,6 +267,10 @@
 	Game.prototype.step = function () {
 	  this.moveObjects();
 	  this.checkCollisions();
+	};
+
+	Game.prototype.isOutOfBounds = function(pos) {
+	  return ( pos[0] < 0 || pos[0] > Game.DIM_X || pos[1] < 0 || pos[1] > Game.DIM_Y);
 	};
 
 	module.exports = Game;
@@ -398,7 +410,6 @@
 
 	var Util = __webpack_require__(2);
 	var MovingObject = __webpack_require__(3);
-	var Asteroid = __webpack_require__(5);
 	// debugger
 
 	function Bullet (params) {
@@ -408,6 +419,8 @@
 	  params.vel[1] *= Bullet.VELOCITY_MULTIPLIER;
 
 	  MovingObject.call(this, params);
+
+	  this.isWrappable = false;
 	}
 	Util.inherits(Bullet, MovingObject);
 
@@ -415,11 +428,11 @@
 	Bullet.RADIUS = 2;
 	Bullet.VELOCITY_MULTIPLIER = 5;
 
-	Bullet.prototype.collideWith = function(otherObject) {
-	  if (otherObject instanceof Asteroid) {
-	    this.game.remove(otherObject);
-	  }
-	};
+	// Bullet.prototype.collideWith = function(otherObject) {
+	//   if (otherObject.type === "ASTEROID") {
+	//     this.game.remove(otherObject);
+	//   }
+	// };
 
 
 	module.exports = Bullet;
