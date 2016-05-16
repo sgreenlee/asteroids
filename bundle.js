@@ -44,11 +44,30 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	window.MovingObject = __webpack_require__(1);
+	window.Asteroids = {};
+
+	Asteroids.Util = __webpack_require__(1);
+	Asteroids.MovingObject = __webpack_require__(2);
 
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	var Util = {};
+
+	Util.inherits = function(childClass, parentClass) {
+	  function Surrogate(){}
+	  Surrogate.prototype = parentClass.prototype;
+	  childClass.prototype = new Surrogate();
+	  childClass.prototype.constructor = childClass;
+	};
+
+	module.exports = Util;
+
+
+/***/ },
+/* 2 */
 /***/ function(module, exports) {
 
 	function MovingObject(params) {
@@ -57,6 +76,22 @@
 	  this.vel = params.vel;
 	  this.radius = params.radius;
 	}
+
+	MovingObject.prototype.move = function() {
+	  this.pos[0] += this.vel[0];
+	  this.pos[1] += this.vel[1];
+	};
+
+	MovingObject.prototype.draw = function(ctx) {
+	  var xCoord = this.pos[0];
+	  var yCoord = this.pos[1];
+	  ctx.beginPath();
+	  ctx.arc(xCoord, yCoord, this.radius, 0, 2 * Math.PI, false);
+	  ctx.fillStyle = this.color;
+	  ctx.fill();
+	  ctx.linewidth = 3;
+	  ctx.stroke();
+	};
 
 	module.exports = MovingObject;
 
