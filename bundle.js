@@ -46,9 +46,9 @@
 
 	window.Asteroids = {};
 
-	Asteroids.Util = __webpack_require__(1);
-	Asteroids.MovingObject = __webpack_require__(5);
-	Asteroids.Game = __webpack_require__(3);
+	Asteroids.Util = __webpack_require__(2);
+	Asteroids.MovingObject = __webpack_require__(3);
+	Asteroids.Game = __webpack_require__(4);
 	Asteroids.GameView = __webpack_require__(7);
 
 	var canvas = document.getElementById('game-canvas');
@@ -73,7 +73,8 @@
 
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ function(module, exports) {
 
 	var Util = {};
@@ -105,12 +106,55 @@
 
 
 /***/ },
-/* 2 */,
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(1);
-	var Asteroid = __webpack_require__(4);
+	var Util = __webpack_require__(2);
+
+	function MovingObject(params) {
+	  this.game = params.game;
+	  this.pos = params.pos;
+	  this.color = params.color;
+	  this.vel = params.vel;
+	  this.radius = params.radius;
+	}
+
+	MovingObject.prototype.move = function() {
+	  this.pos[0] += this.vel[0];
+	  this.pos[1] += this.vel[1];
+	  this.pos = this.game.wrap(this.pos);
+	};
+
+	MovingObject.prototype.draw = function(ctx) {
+	  var xCoord = this.pos[0];
+	  var yCoord = this.pos[1];
+	  ctx.beginPath();
+	  ctx.arc(xCoord, yCoord, this.radius, 0, 2 * Math.PI, false);
+	  ctx.fillStyle = this.color;
+	  ctx.fill();
+	  ctx.linewidth = 3;
+	  ctx.strokeStyle = '#003300';
+	  ctx.stroke();
+	};
+
+	MovingObject.prototype.isCollidedWith = function(otherObject) {
+	  var distance = Util.vecDistance(this.pos, otherObject.pos);
+	  return (distance < this.radius + otherObject.radius);
+	};
+
+	MovingObject.prototype.collideWith = function(otherObject) {
+
+	};
+
+	module.exports = MovingObject;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+	var Asteroid = __webpack_require__(5);
 	var Ship = __webpack_require__(6);
 
 	function Game() {
@@ -186,11 +230,11 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(1);
-	var MovingObject = __webpack_require__(5);
+	var Util = __webpack_require__(2);
+	var MovingObject = __webpack_require__(3);
 	var Ship = __webpack_require__(6)
 
 	function Asteroid(params) {
@@ -216,55 +260,11 @@
 
 
 /***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Util = __webpack_require__(1);
-
-	function MovingObject(params) {
-	  this.game = params.game;
-	  this.pos = params.pos;
-	  this.color = params.color;
-	  this.vel = params.vel;
-	  this.radius = params.radius;
-	}
-
-	MovingObject.prototype.move = function() {
-	  this.pos[0] += this.vel[0];
-	  this.pos[1] += this.vel[1];
-	  this.pos = this.game.wrap(this.pos);
-	};
-
-	MovingObject.prototype.draw = function(ctx) {
-	  var xCoord = this.pos[0];
-	  var yCoord = this.pos[1];
-	  ctx.beginPath();
-	  ctx.arc(xCoord, yCoord, this.radius, 0, 2 * Math.PI, false);
-	  ctx.fillStyle = this.color;
-	  ctx.fill();
-	  ctx.linewidth = 3;
-	  ctx.strokeStyle = '#003300';
-	  ctx.stroke();
-	};
-
-	MovingObject.prototype.isCollidedWith = function(otherObject) {
-	  var distance = Util.vecDistance(this.pos, otherObject.pos);
-	  return (distance < this.radius + otherObject.radius);
-	};
-
-	MovingObject.prototype.collideWith = function(otherObject) {
-
-	};
-
-	module.exports = MovingObject;
-
-
-/***/ },
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(1);
-	var MovingObject = __webpack_require__(5);
+	var Util = __webpack_require__(2);
+	var MovingObject = __webpack_require__(3);
 
 	function Ship(params) {
 	  params.color = Ship.COLOR;
@@ -283,6 +283,11 @@
 	  this.vel = [0, 0];
 	};
 
+	Ship.prototype.power = function(impulse) {
+	  this.vel[0] += impulse[0];
+	  this.vel[1] += impulse[1];
+	};
+
 	module.exports = Ship;
 
 
@@ -298,10 +303,16 @@
 	GameView.prototype.start = function() {
 	  var game = this.game;
 	  var ctx = this.ctx;
+	  this.bindKeyHandlers();
 	  setInterval(function(){
 	    game.step();
 	    game.draw(ctx);
 	  }, 20);
+	};
+
+	GameView.prototype.bindKeyHandlers = function(){
+	  var ship = this.game.ship;
+	  key("up", ship.power.bind(ship, [1, 1]));
 	};
 
 	module.exports = GameView;
