@@ -98,6 +98,22 @@
 	  return [x, y];
 	};
 
+	Util.vecAddition = function(vec1, vec2) {
+	  return [vec1[0] + vec2[0], vec1[1] + vec2[1]];
+	};
+
+	Util.vecAddition = function(vec1, vec2) {
+	  return [vec1[0] - vec2[0], vec1[1] - vec2[1]];
+	};
+
+	Util.vecPerpendicular = function(vec) {
+	  return [-vec[1], vec[0]];
+	};
+
+	Util.vecScalar = function(vec, scalar) {
+	  return [vec[0] * scalar, vec[1] * scalar];
+	};
+
 	Util.vecDistance = function(pos1, pos2) {
 	  return Math.sqrt(Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
 	};
@@ -165,6 +181,8 @@
 	var Ship = __webpack_require__(6);
 
 	function Game() {
+	  this._asteroids = [];
+	  this._bullets = [];
 	  this.addAsteroids();
 	  this.ship = new Ship({ game: this, pos: this.randomPosition() });
 	}
@@ -179,7 +197,6 @@
 	};
 
 	Game.prototype.addAsteroids = function() {
-	  if (this._asteroids === undefined) this._asteroids = [];
 	  for (var i = 0; i < Game.NUM_ASTEROIDS; i++) {
 	    this._asteroids.push(new Asteroid({ game: this, pos: this.randomPosition() }));
 	  }
@@ -223,7 +240,7 @@
 	};
 
 	Game.prototype.allObjects = function () {
-	  var objects = this._asteroids.slice();
+	  var objects = this._bullets.slice().concat(this._asteroids.slice());
 	  objects.push(this.ship);
 	  return objects;
 	};
@@ -272,6 +289,7 @@
 
 	var Util = __webpack_require__(2);
 	var MovingObject = __webpack_require__(3);
+	var Bullet = __webpack_require__(8);
 
 	function Ship(params) {
 	  params.color = Ship.COLOR;
@@ -279,6 +297,7 @@
 	  params.vel = [0, 0];
 
 	  MovingObject.call(this, params);
+	  this.direction = [1,0];
 	}
 	Util.inherits(Ship, MovingObject);
 
@@ -291,12 +310,42 @@
 	};
 
 	Ship.prototype.power = function(impulse) {
-	  this.vel[0] += impulse[0];
-	  this.vel[1] += impulse[1];
+	  this.vel[0] += impulse * this.direction[0];
+	  this.vel[1] += impulse * this.direction[1];
 	};
 
 	Ship.prototype.steer = function(angle) {
-	  this.vel = Util.rotateVec(this.vel, angle);
+	  this.direction = Util.rotateVec(this.direction, angle);
+	};
+
+	Ship.prototype.draw = function(ctx) {
+	  ctx.beginPath();
+
+	  var backward = Util.vecScalar(this.direction, 10);
+	  var forward = Util.vecScalar(this.direction, -10);
+	  var left = Util.vecScalar(Util.vecPerpendicular(this.direction), -7);
+	  var right = Util.vecScalar(Util.vecPerpendicular(this.direction), 7);
+
+	  var p1 = Util.vecAddition(this.pos, forward);
+	  var p2 = Util.vecAddition(Util.vecAddition(this.pos, backward), left);
+	  var p3 = Util.vecAddition(Util.vecAddition(this.pos, backward), right);
+
+	  ctx.moveTo(p1[0], p1[1]);
+	  ctx.lineTo(p2[0], p2[1]);
+	  ctx.lineTo(p3[0], p3[1]);
+	  ctx.closePath();
+
+	  ctx.fillStyle = this.color;
+	  ctx.fill();
+	  ctx.stroke();
+	};
+
+	Ship.prototype.fireBullet = function() {
+	  this.game._bullets.push( new Bullet({
+	    game: this.game,
+	    pos : this.pos.slice(),
+	    vel : this.direction.slice()
+	  }));
 	};
 
 	module.exports = Ship;
@@ -323,12 +372,45 @@
 
 	GameView.prototype.bindKeyHandlers = function(){
 	  var ship = this.game.ship;
-	  key("up", ship.power.bind(ship, [1, 1]));
-	  key("left", ship.steer.bind(ship, -0.4));
-	  key("right", ship.steer.bind(ship, 0.4));
+	  key("up", ship.power.bind(ship, 1));
+	  key("left", ship.steer.bind(ship, -0.3));
+	  key("right", ship.steer.bind(ship, 0.3));
+	  key("space", ship.fireBullet.bind(ship));
 	};
 
 	module.exports = GameView;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+	var Asteroid = __webpack_require__(5);
+	var MovingObject = __webpack_require__(3);
+
+	function Bullet (params) {
+	  params.color = Bullet.COLOR;
+	  params.radius = Bullet.RADIUS;
+	  params.vel[0] *= Bullet.VELOCITY_MULTIPLIER;
+	  params.vel[1] *= Bullet.VELOCITY_MULTIPLIER;
+
+	  MovingObject.call(this, params);
+	}
+	Util.inherits(Bullet, MovingObject);
+
+	Bullet.COLOR = 'yellow';
+	Bullet.RADIUS = 2;
+	Bullet.VELOCITY_MULTIPLIER = 5;
+
+	Bullet.prototype.collideWith = function(otherObject) {
+	  if (otherObject instanceof Asteroid) {
+	    this.game.remove(otherObject);
+	  }
+	};
+
+
+	module.exports = Bullet;
 
 
 /***/ }
