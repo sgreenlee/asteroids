@@ -48,6 +48,28 @@
 
 	Asteroids.Util = __webpack_require__(1);
 	Asteroids.MovingObject = __webpack_require__(2);
+	Asteroids.Game = __webpack_require__(3);
+	Asteroids.GameView = __webpack_require__(4);
+
+	var canvas = document.getElementById('game-canvas');
+	var ctx = canvas.getContext("2d");
+
+	var game = new Asteroids.Game();
+	//
+	window.gameView = new Asteroids.GameView(game, ctx);
+	gameView.start();
+
+	// var centerX = canvas.width / 2;
+	// var centerY = canvas.height / 2;
+	// var radius = 70;
+	//
+	// ctx.beginPath();
+	// ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+	// ctx.fillStyle = 'green';
+	// ctx.fill();
+	// ctx.lineWidth = 5;
+	// ctx.strokeStyle = '#003300';
+	// ctx.stroke();
 
 
 /***/ },
@@ -61,6 +83,22 @@
 	  Surrogate.prototype = parentClass.prototype;
 	  childClass.prototype = new Surrogate();
 	  childClass.prototype.constructor = childClass;
+	};
+
+	Util.randomVec = function (xMin, xMax, yMin, yMax) {
+	  var xRange = xMax - xMin;
+	  var yRange = yMax - yMin;
+	  var xCenter = (xMax + xMin)/2;
+	  var yCenter = (yMax + yMin)/2;
+
+	  var x = Math.random() * xRange + (xCenter - xRange/2);
+	  var y = Math.random() * yRange + (yCenter - yRange/2);
+
+	  return [x, y];
+	};
+
+	Util.vecDistance = function(pos1, pos2) {
+	  return Math.sqrt(Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
 	};
 
 	module.exports = Util;
@@ -90,10 +128,102 @@
 	  ctx.fillStyle = this.color;
 	  ctx.fill();
 	  ctx.linewidth = 3;
+	  ctx.strokeStyle = '#003300';
 	  ctx.stroke();
 	};
 
+	MovingObject.collidesWith = function(otherObject){
+
+	};
+
 	module.exports = MovingObject;
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(1);
+	var Asteroid = __webpack_require__(5);
+
+	function Game() {
+	  this.addAsteroids();
+	}
+
+	// TODO: set these constants
+	Game.DIM_X = 800 ;
+	Game.DIM_Y = 600 ;
+	Game.NUM_ASTEROIDS = 15 ;
+
+	Game.prototype.randomPosition = function() {
+	  return Util.randomVec(0, Game.DIM_X, 0, Game.DIM_Y);
+	};
+
+	Game.prototype.addAsteroids = function() {
+	  if (this._asteroids === undefined) this._asteroids = [];
+	  for (var i = 0; i < Game.NUM_ASTEROIDS; i++) {
+	    this._asteroids.push(new Asteroid({ pos: this.randomPosition() }));
+	  }
+	};
+
+	Game.prototype.draw = function(ctx) {
+	  ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
+	  for (var i = 0; i < this._asteroids.length; i++) {
+	    this._asteroids[i].draw(ctx);
+	  }
+	};
+
+	Game.prototype.moveObjects = function() {
+	  for (var i = 0; i < this._asteroids.length; i++) {
+	    this._asteroids[i].move();
+	  }
+	};
+
+	module.exports = Game;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	function GameView(game, ctx) {
+	  this.game = game;
+	  this.ctx = ctx;
+	}
+
+	GameView.prototype.start = function() {
+	  var game = this.game;
+	  var ctx = this.ctx;
+	  setInterval(function(){
+	    game.moveObjects();
+	    game.draw(ctx);
+	  }, 20);
+	};
+
+	module.exports = GameView;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(1);
+	var MovingObject = __webpack_require__(2);
+
+	function Asteroid(params) {
+
+	  params.color = Asteroid.COLOR;
+	  params.radius = Asteroid.RADIUS;
+	  params.vel = Util.randomVec(-5, 5, -5, 5);
+
+	  MovingObject.call(this, params);
+	}
+	Util.inherits(Asteroid, MovingObject);
+
+	Asteroid.COLOR = 'grey';
+	Asteroid.RADIUS = 40;
+
+	module.exports = Asteroid;
 
 
 /***/ }
