@@ -47,9 +47,9 @@
 	window.Asteroids = {};
 
 	Asteroids.Util = __webpack_require__(1);
-	Asteroids.MovingObject = __webpack_require__(2);
+	Asteroids.MovingObject = __webpack_require__(5);
 	Asteroids.Game = __webpack_require__(3);
-	Asteroids.GameView = __webpack_require__(5);
+	Asteroids.GameView = __webpack_require__(7);
 
 	var canvas = document.getElementById('game-canvas');
 	var ctx = canvas.getContext("2d");
@@ -105,7 +105,118 @@
 
 
 /***/ },
-/* 2 */
+/* 2 */,
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(1);
+	var Asteroid = __webpack_require__(4);
+	var Ship = __webpack_require__(6);
+
+	function Game() {
+	  this.addAsteroids();
+	  this.ship = new Ship({ game: this, pos: this.randomPosition() });
+	}
+
+	// TODO: set these constants
+	Game.DIM_X = 800 ;
+	Game.DIM_Y = 600 ;
+	Game.NUM_ASTEROIDS = 3 ;
+
+	Game.prototype.randomPosition = function() {
+	  return Util.randomVec(0, Game.DIM_X, 0, Game.DIM_Y);
+	};
+
+	Game.prototype.addAsteroids = function() {
+	  if (this._asteroids === undefined) this._asteroids = [];
+	  for (var i = 0; i < Game.NUM_ASTEROIDS; i++) {
+	    this._asteroids.push(new Asteroid({ game: this, pos: this.randomPosition() }));
+	  }
+	};
+
+	Game.prototype.draw = function(ctx) {
+	  var objects = this.allObjects();
+	  ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
+	  for (var i = 0; i < objects.length; i++) {
+	    objects[i].draw(ctx);
+	  }
+	};
+
+	Game.prototype.moveObjects = function() {
+	  var objects = this.allObjects();
+	  for (var i = 0; i < objects.length; i++) {
+	    objects[i].move();
+	  }
+	};
+
+	Game.prototype.wrap = function(pos) {
+	  var x = (pos[0] + (Game.DIM_X)) % Game.DIM_X;
+	  var y = (pos[1] + (Game.DIM_Y)) % Game.DIM_Y;
+	  return [x,y];
+	};
+
+	Game.prototype.remove = function(asteroid) {
+	  var asteroidIdx = this._asteroids.indexOf(asteroid);
+	  if (asteroidIdx !== -1) this._asteroids.splice(asteroidIdx, 1);
+	};
+
+	Game.prototype.checkCollisions = function () {
+	  var objects = this.allObjects();
+	  for (var i = 0; i < objects.length - 1; i++) {
+	    for (var j = i + 1; j < objects.length; j++) {
+	      if (objects[i].isCollidedWith(objects[j])) {
+	        objects[i].collideWith(objects[j]);
+	      }
+	    }
+	  }
+	};
+
+	Game.prototype.allObjects = function () {
+	  var objects = this._asteroids.slice();
+	  objects.push(this.ship);
+	  return objects;
+	};
+
+	Game.prototype.step = function () {
+	  this.moveObjects();
+	  this.checkCollisions();
+	};
+
+	module.exports = Game;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(1);
+	var MovingObject = __webpack_require__(5);
+	var Ship = __webpack_require__(6)
+
+	function Asteroid(params) {
+
+	  params.color = Asteroid.COLOR;
+	  params.radius = Asteroid.RADIUS;
+	  params.vel = Util.randomVec(-5, 5, -5, 5);
+
+	  MovingObject.call(this, params);
+	}
+	Util.inherits(Asteroid, MovingObject);
+
+	Asteroid.COLOR = 'grey';
+	Asteroid.RADIUS = 40;
+
+	Asteroid.prototype.collideWith = function(otherObject) {
+	  if (otherObject instanceof Ship) {
+	    otherObject.relocate();
+	  }
+	};
+
+	module.exports = Asteroid;
+
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(1);
@@ -141,106 +252,42 @@
 	  return (distance < this.radius + otherObject.radius);
 	};
 
+	MovingObject.prototype.collideWith = function(otherObject) {
+
+	};
+
 	module.exports = MovingObject;
 
 
 /***/ },
-/* 3 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(1);
-	var Asteroid = __webpack_require__(4);
+	var MovingObject = __webpack_require__(5);
 
-	function Game() {
-	  this.addAsteroids();
-	}
-
-	// TODO: set these constants
-	Game.DIM_X = 800 ;
-	Game.DIM_Y = 600 ;
-	Game.NUM_ASTEROIDS = 3 ;
-
-	Game.prototype.randomPosition = function() {
-	  return Util.randomVec(0, Game.DIM_X, 0, Game.DIM_Y);
-	};
-
-	Game.prototype.addAsteroids = function() {
-	  if (this._asteroids === undefined) this._asteroids = [];
-	  for (var i = 0; i < Game.NUM_ASTEROIDS; i++) {
-	    this._asteroids.push(new Asteroid({ game: this, pos: this.randomPosition() }));
-	  }
-	};
-
-	Game.prototype.draw = function(ctx) {
-	  ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
-	  for (var i = 0; i < this._asteroids.length; i++) {
-	    this._asteroids[i].draw(ctx);
-	  }
-	};
-
-	Game.prototype.moveObjects = function() {
-	  for (var i = 0; i < this._asteroids.length; i++) {
-	    this._asteroids[i].move();
-	  }
-	};
-
-	Game.prototype.wrap = function(pos) {
-	  var x = (pos[0] + (Game.DIM_X)) % Game.DIM_X;
-	  var y = (pos[1] + (Game.DIM_Y)) % Game.DIM_Y;
-	  return [x,y];
-	};
-
-	Game.prototype.remove = function(asteroid) {
-	  var asteroidIdx = this._asteroids.indexOf(asteroid);
-	  if (asteroidIdx !== -1) this._asteroids.splice(asteroidIdx, 1);
-	};
-
-	Game.prototype.checkCollisions = function () {
-	  for (var i = 0; i < this._asteroids.length - 1; i++) {
-	    for (var j = i + 1; j < this._asteroids.length; j++) {
-	      if (this._asteroids[i].isCollidedWith(this._asteroids[j])) {
-	        var asteroid1 = this._asteroids[i];
-	        var asteroid2 = this._asteroids[j];
-	        this.remove(asteroid1);
-	        this.remove(asteroid2);
-	      }
-	    }
-	  }
-	};
-
-	Game.prototype.step = function () {
-	  this.moveObjects();
-	  this.checkCollisions();
-	};
-
-	module.exports = Game;
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Util = __webpack_require__(1);
-	var MovingObject = __webpack_require__(2);
-
-	function Asteroid(params) {
-
-	  params.color = Asteroid.COLOR;
-	  params.radius = Asteroid.RADIUS;
-	  params.vel = Util.randomVec(-5, 5, -5, 5);
+	function Ship(params) {
+	  params.color = Ship.COLOR;
+	  params.radius = Ship.RADIUS;
+	  params.vel = [0, 0];
 
 	  MovingObject.call(this, params);
 	}
-	Util.inherits(Asteroid, MovingObject);
+	Util.inherits(Ship, MovingObject);
 
-	Asteroid.COLOR = 'grey';
-	Asteroid.RADIUS = 40;
+	Ship.COLOR = 'green';
+	Ship.RADIUS = 10;
 
-	module.exports = Asteroid;
+	Ship.prototype.relocate = function() {
+	  this.pos = this.game.randomPosition();
+	  this.vel = [0, 0];
+	};
+
+	module.exports = Ship;
 
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports) {
 
 	function GameView(game, ctx) {

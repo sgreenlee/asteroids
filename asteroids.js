@@ -1,7 +1,7 @@
 window.Asteroids = {};
 
 Asteroids.Util = require("./lib/util.js");
-Asteroids.MovingObject = require("./lib/MovingObject");
+Asteroids.MovingObject = require("./lib/movingObject");
 Asteroids.Game = require("./lib/game");
 Asteroids.GameView = require("./lib/gameView");
 
