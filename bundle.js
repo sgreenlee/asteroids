@@ -387,10 +387,14 @@
 	  var game = this.game;
 	  var ctx = this.ctx;
 	  this.bindKeyHandlers();
-	  setInterval(function(){
+
+	  function animate() {
 	    game.step();
 	    game.draw(ctx);
-	  }, 20);
+	    requestAnimationFrame(animate);
+	  }
+
+	  animate();
 	};
 
 	GameView.prototype.bindKeyHandlers = function(){
