@@ -251,7 +251,7 @@
 	    object2.relocate();
 	  }
 	  else if (object1 instanceof Bullet && object2 instanceof Asteroid){
-	    object1.pos = [Game.DIM_X + 100, Game.DIM_Y];
+	    object1.pos = [Game.DIM_X * 100, Game.DIM_Y * 100];
 	    return object2.explode();
 	  }
 	  return [];
@@ -288,14 +288,8 @@
 	// var Ship = require("./ship.js");
 
 	var trump = document.getElementById("trump");
-	var cruz = document.getElementById("cruz");
-	var carson = document.getElementById("carson");
-	var rubio = document.getElementById("rubio");
-	var bush = document.getElementById("bush");
-	var paul = document.getElementById("paul");
-	var fiorina = document.getElementById("fiorina");
-	var christie = document.getElementById("christie");
-	var huckabee = document.getElementById("huckabee");
+	var trump2 = document.getElementById("trump2");
+	var trump3 = document.getElementById("trump3");
 
 	function Asteroid(params) {
 
@@ -309,9 +303,9 @@
 	    this.image = trump;
 	  }
 	  else if (this.radius > 39) {
-	    this.image = [cruz, kasich, rubio, carson][Math.floor(Math.random() * 4)];
+	    this.image = trump2
 	  } else {
-	    this.image = [paul, bush, fiorina, huckabee, christie][Math.floor(Math.random() * 5)];
+	    this.image = trump3;
 	  }
 	}
 

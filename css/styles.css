@@ -1,0 +1,43 @@
+html, body, canvas, h1 {
+  margin: 0;
+  border: 0;
+  padding: 0;
+
+  background: transparent;
+
+  box-sizing: border-box;
+
+  font: inherit;
+}
+
+
+body {
+  font-family: 'Roboto Slab', serif;
+  min-height: 1000px;
+
+
+  /* these will reset other properties, like background-position, but it does know what you mean */
+  background: red;
+  background: linear-gradient(red, orange);
+  background-size: contain;
+}
+
+canvas {
+  border: 10px black solid;
+  margin: auto;
+  display: block;
+  background: lightgrey;
+}
+
+h1 {
+  font-size: 72px;
+  text-align: center;
+  margin: 5px;
+  color: slateblue;
+  text-shadow: 0px 0px 5px yellow;
+  letter-spacing: 5px;
+}
+
+img {
+  display: none;
+}
