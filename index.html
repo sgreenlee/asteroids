@@ -3,18 +3,46 @@
   <head>
     <meta charset="utf-8">
     <title></title>
+    <link href='https://fonts.googleapis.com/css?family=Stardos+Stencil:400,700' rel='stylesheet' type='text/css'>
   </head>
   <body>
+    <h1>GOP PRIMARY ASTEROIDS</h1>
+    <canvas id="game-canvas" width="800" height="600"></canvas>
 
+    <img id="trump" src="img/trump.png" alt="" />
+    <img id="cruz" src="img/cruz.png" alt="" />
+    <img id="carson" src="img/carson.png" alt="" />
+    <img id="kasich" src="img/kasich.png" alt="" />
+    <img id="rubio" src="img/rubio.png" alt="" />
+    <img id="fiorina" src="img/fiorina.png" alt="" />
+    <img id="christie" src="img/christie.png" alt="" />
+    <img id="bush" src="img/bush.png" alt="" />
+    <img id="paul" src="img/paul.png" alt="" />
+    <img id="huckabee" src="img/huckabee.png" alt="" />
+    <style media="screen">
 
-      <canvas id="game-canvas" width="800" height="600"></canvas>
-      <style media="screen">
-        canvas {
-          border: 1px black solid;
-        }
-      </style>
+      body {
+        font-family: 'Stardos Stencil', cursive;
+      }
 
-      <script type="text/javascript" src="vendor/keymaster.js"></script>
-      <script type="text/javascript" src="bundle.js"></script>
+      canvas {
+        border: 1px black solid;
+        margin: auto;
+        display: block;
+      }
+
+      h1 {
+        text-align: center;
+        margin: 5px;
+
+      }
+
+      img {
+        display: none;
+      }
+    </style>
+
+    <script type="text/javascript" src="vendor/keymaster.js"></script>
+    <script type="text/javascript" src="bundle.js"></script>
   </body>
 </html>
